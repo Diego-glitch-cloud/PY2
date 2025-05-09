@@ -1,0 +1,19 @@
+funcion recomendacion(usuario)
+    recomendación = null
+    diccionario recomendaciones[recomendacion, peso] = null
+
+    recomendaciones = revisar_vecino(usuario)
+    recomendacion_final = recomendaciones[peso mayor]
+
+    return recomendación_final, peso 
+
+
+
+funcion revisar_vecinos(usuario)
+    cuando (!visitado) 
+        si su peso > peso anterior
+            vecino_mas_pesado = vecino_actual
+        si no 
+            pasar a siguiente vecino 
+    return vecino_mas_pesado, peso 
+
