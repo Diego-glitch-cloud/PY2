@@ -1,5 +1,3 @@
-# relacion_genero.py
-
 class Arista:
     def __init__(self, genero1, genero2, peso=1):
         self.genero1 = genero1
