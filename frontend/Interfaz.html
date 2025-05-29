@@ -316,7 +316,6 @@ margin-bottom: 20px;
 <div class="container">
 <div class="header">
 <h1>Sistema de Recomendación Musical</h1>
-<p>Interfaz web para gestión de usuarios y recomendaciones musicales</p>
 <div id="status" class="status disconnected">🔴 Desconectado</div>
 </div>
 
@@ -416,11 +415,6 @@ Conecte a Neo4j para ver usuarios
 </div>
 </div>
 
-<!-- Log -->
-<div class="section">
-<h2>    Log de Actividades</h2>
-<div id="log" class="log">Sistema iniciado. Conecte a Neo4j para comenzar.</div>
-</div>
 </div>
 </div>
 
@@ -504,7 +498,6 @@ showAlert('Todos los campos de conexión son obligatorios', 'error');
 return;
 }
 
-logMessage('Intentando conectar a Neo4j...');
 
 try {
 await apiRequest('/connect', 'POST', { uri, username, password });
@@ -521,7 +514,6 @@ document.getElementById('deleteUserBtn').disabled = false;
 document.getElementById('refreshRecommendBtn').disabled = false;
 document.getElementById('recommendBtn').disabled = false;
 
-logMessage('Conectado exitosamente a Neo4j');
 showAlert('Conectado exitosamente a Neo4j');
 
 // Cargar usuarios iniciales
@@ -529,7 +521,6 @@ actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
 } catch (error) {
-logMessage(`Error de conexión: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -557,7 +548,6 @@ document.getElementById('recommendBtn').disabled = true;
 document.getElementById('userListDelete').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Conecte a Neo4j para ver usuarios</div>';
 document.getElementById('userListRecommend').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Conecte a Neo4j para ver usuarios</div>';
 
-logMessage('🔴 Desconectado de Neo4j');
 showAlert('Desconectado de Neo4j', 'error');
 }
 
@@ -585,7 +575,6 @@ return;
 try {
 await apiRequest('/users', 'POST', { name: userName, genres: genres });
 
-logMessage(`Usuario '${userName}' agregado con géneros: ${genres.join(', ')}`);
 showAlert(`Usuario '${userName}' agregado exitosamente`);
 
 // Limpiar campos
@@ -597,7 +586,6 @@ actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
 } catch (error) {
-logMessage(`Error al agregar usuario: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -643,10 +631,8 @@ selectedUserForRecommend = usuario.name;
 listElement.appendChild(userDiv);
 });
 
-logMessage(`Lista de usuarios actualizada: ${usuarios.length} usuarios`);
 
 } catch (error) {
-logMessage(`Error al obtener usuarios: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -668,7 +654,6 @@ const result = await apiRequest(`/users/${encodeURIComponent(selectedUserForDele
 const deletedUser = result.deletedUser;
 const genresList = deletedUser.genres.join(', ');
 
-logMessage(`Usuario '${deletedUser.name}' eliminado - Géneros: [${genresList}]`);
 showAlert(`Usuario '${deletedUser.name}' eliminado exitosamente. Géneros: ${genresList}`);
 
 selectedUserForDelete = null;
@@ -676,7 +661,6 @@ actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
 } catch (error) {
-logMessage(`Error al eliminar usuario: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -700,18 +684,14 @@ const recommendationText = result.recommendedGenres && result.recommendedGenres.
 document.getElementById('recommendation').textContent = recommendationText;
 document.getElementById('recommendationResult').style.display = 'block';
 
-logMessage(`Recomendaciones para '${selectedUserForRecommend}': ${recommendationText}`);
 
 } catch (error) {
-logMessage(`Error al obtener recomendación: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
 
 // Mostrar instrucciones iniciales
 setTimeout(() => {
-logMessage('Para comenzar: 1) Configure la conexión a Neo4j, 2) Haga clic en Conectar');
-logMessage('Nota: Necesita un servidor backend ejecutándose para la conexión real');
 }, 1000);
 </script>
 </body>
