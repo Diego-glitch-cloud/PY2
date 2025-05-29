@@ -316,6 +316,7 @@ margin-bottom: 20px;
 <div class="container">
 <div class="header">
 <h1>Sistema de Recomendación Musical</h1>
+<p>Recomendaciones de géneros musicales</p>
 <div id="status" class="status disconnected">🔴 Desconectado</div>
 </div>
 
@@ -424,7 +425,7 @@ let selectedUserForDelete = null;
 let selectedUserForRecommend = null;
 let connected = false;
 
-// URL del backend API (cambiar según tu configuración)
+// URL del backend API
 const API_BASE_URL = 'http://localhost:3000/api';
 
 // Funciones de interfaz
@@ -607,7 +608,7 @@ usuarios.forEach((usuario) => {
 const userDiv = document.createElement('div');
 userDiv.className = 'user-item';
 
-// AQUÍ ESTÁ EL CAMBIO PRINCIPAL - Mostrar la lista completa de géneros
+// Mostrar la lista completa de géneros
 userDiv.innerHTML = `
 <div class="user-name">${usuario.name}</div>
 <div class="user-genres">Géneros: ${usuario.genres.join(', ')}</div>
@@ -666,29 +667,32 @@ showAlert(`Error: ${error.message}`, 'error');
 }
 
 async function obtenerRecomendacion() {
-if (!selectedUserForRecommend) {
-showAlert('Seleccione un usuario para obtener recomendaciones', 'error');
-return;
+    if (!selectedUserForRecommend) {
+        showAlert('Seleccione un usuario para obtener recomendaciones', 'error');
+        return;
+    }
+
+    try {
+        const result = await apiRequest(`/recommendations/${encodeURIComponent(selectedUserForRecommend)}`);
+
+        const list = result.recommendedGenres;
+
+        if (list && list.length > 0) {
+            document.getElementById('userGenres').textContent = 'Basado en tus gustos';
+            document.getElementById('recommendation').textContent = list
+                .map(g => `${g.genre} (puntuación: ${g.score})`)
+                .join(', ');
+        } else {
+            document.getElementById('userGenres').textContent = '';
+            document.getElementById('recommendation').textContent = 'No se encontraron recomendaciones.';
+        }
+
+        document.getElementById('recommendationResult').style.display = 'block';
+    } catch (error) {
+        showAlert(`Error: ${error.message}`, 'error');
+    }
 }
 
-try {
-const result = await apiRequest(`/recommendations/${encodeURIComponent(selectedUserForRecommend)}`);
-
-document.getElementById('userGenres').textContent = result.userGenres.join(', ');
-
-// Mostrar todas las recomendaciones si hay varias
-const recommendationText = result.recommendedGenres && result.recommendedGenres.length > 0
-? result.recommendedGenres.join(', ')
-: 'No se encontraron recomendaciones';
-
-document.getElementById('recommendation').textContent = recommendationText;
-document.getElementById('recommendationResult').style.display = 'block';
-
-
-} catch (error) {
-showAlert(`Error: ${error.message}`, 'error');
-}
-}
 
 // Mostrar instrucciones iniciales
 setTimeout(() => {

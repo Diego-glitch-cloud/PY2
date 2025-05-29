@@ -20,10 +20,10 @@ async function connectToNeo4j(uri, username, password) {
         driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
         await driver.verifyConnectivity();
 
-        console.log('Conectado a Neo4j exitosamente');
+        console.log('✅ Conectado a Neo4j exitosamente');
         return true;
     } catch (error) {
-        console.error('Error conectando a Neo4j:', error);
+        console.error('❌ Error conectando a Neo4j:', error);
         throw error;
     }
 }
@@ -86,6 +86,19 @@ app.post('/api/users', async (req, res) => {
         const result = await session.run(query, { name, genres });
         const record = result.records[0];
 
+        // Recalcular relaciones SIMILAR entre géneros
+        await session.run(`MATCH ()-[s:SIMILAR]-() DELETE s`);
+
+        await session.run(`
+            MATCH (u:User)-[:LIKES]->(g1:Genre)
+            MATCH (u)-[:LIKES]->(g2:Genre)
+            WHERE id(g1) < id(g2)
+            MERGE (g1)-[s:SIMILAR]-(g2)
+            ON CREATE SET s.weight = 1
+            ON MATCH SET s.weight = s.weight + 1
+        `);
+
+
         res.json({
             success: true,
             user: {
@@ -101,6 +114,7 @@ app.post('/api/users', async (req, res) => {
         await session.close();
     }
 });
+
 
 // Obtener usuarios y sus géneros
 app.get('/api/users', async (req, res) => {
@@ -118,7 +132,7 @@ app.get('/api/users', async (req, res) => {
 
         const users = result.records.map(record => ({
             name: record.get('name'),
-            genres: record.get('genres').filter(genre => genre !== null) // Filtrar valores null
+            genres: record.get('genres') || []
         }));
 
         res.json({ users });
@@ -139,7 +153,7 @@ app.delete('/api/users/:name', async (req, res) => {
     const session = driver.session();
 
     try {
-        // Primero obtenemos los géneros del usuario antes de eliminarlo
+        // Obtener géneros del usuario antes de eliminarlo
         const userResult = await session.run(`
             MATCH (u:User {name: $userName})
             OPTIONAL MATCH (u)-[:LIKES]->(g:Genre)
@@ -162,6 +176,18 @@ app.delete('/api/users/:name', async (req, res) => {
             DETACH DELETE u
         `, { userName });
 
+        // Recalcular relaciones SIMILAR
+        await session.run(`MATCH ()-[s:SIMILAR]-() DELETE s`);
+
+        await session.run(`
+            MATCH (u:User)-[:LIKES]->(g1:Genre)
+            MATCH (u)-[:LIKES]->(g2:Genre)
+            WHERE id(g1) < id(g2)
+            MERGE (g1)-[s:SIMILAR]-(g2)
+            ON CREATE SET s.weight = 1
+            ON MATCH SET s.weight = s.weight + 1
+        `);
+
         res.json({
             success: true,
             message: 'Usuario eliminado exitosamente',
@@ -176,7 +202,9 @@ app.delete('/api/users/:name', async (req, res) => {
     }
 });
 
-// Obtener recomendaciones
+
+
+// Obtener recomendaciones basadas en usuarios similares
 app.get('/api/recommendations/:name', async (req, res) => {
     if (!driver) return res.status(400).json({ error: 'No hay conexión activa con Neo4j' });
 
@@ -184,65 +212,26 @@ app.get('/api/recommendations/:name', async (req, res) => {
     const session = driver.session();
 
     try {
-        // Verificar si el usuario existe y obtener sus géneros
-        const userCheckResult = await session.run(`
-            MATCH (u:User {name: $userName})
-            OPTIONAL MATCH (u)-[:LIKES]->(g:Genre)
-            RETURN u.name AS name, collect(g.name) AS userGenres
+        const result = await session.run(`
+            MATCH (target:User {name: $userName})-[:LIKES]->(g:Genre)
+            WITH target, collect(g) AS targetGenres
+            MATCH (other:User)-[:LIKES]->(shared:Genre)
+            WHERE other.name <> $userName AND shared IN targetGenres
+            WITH target, other
+            MATCH (other)-[:LIKES]->(rec:Genre)
+            WHERE NOT (target)-[:LIKES]->(rec)
+            RETURN rec.name AS recommendation, count(*) AS score
+            ORDER BY score DESC
+            LIMIT 5
         `, { userName });
 
-        if (userCheckResult.records.length === 0) {
-            return res.status(404).json({ 
-                error: 'Usuario no encontrado',
-                userName
-            });
-        }
 
-        const userRecord = userCheckResult.records[0];
-        const userGenres = userRecord.get('userGenres').filter(genre => genre !== null && genre !== '');
+        const recommendations = result.records.map(record => ({
+            genre: record.get('recommendation'),
+            score: record.get('score').toInt()
+        }));
 
-        if (userGenres.length === 0) {
-            return res.json({
-                userName,
-                userGenres: [],
-                recommendedGenres: [],
-                message: 'El usuario no tiene géneros registrados',
-                totalUserGenres: 0,
-                totalRecommendations: 0
-            });
-        }
-
-        // Obtener recomendaciones basadas en usuarios con géneros similares
-        const recommendationResult = await session.run(`
-            MATCH (targetUser:User {name: $userName})-[:LIKES]->(userGenre:Genre)
-            WITH targetUser, collect(userGenre) AS targetUserGenres
-            
-            MATCH (otherUser:User)-[:LIKES]->(sharedGenre:Genre)
-            WHERE otherUser <> targetUser AND sharedGenre IN targetUserGenres
-            WITH targetUser, targetUserGenres, otherUser, count(sharedGenre) AS sharedCount
-            WHERE sharedCount > 0
-            
-            MATCH (otherUser)-[:LIKES]->(recommendedGenre:Genre)
-            WHERE NOT recommendedGenre IN targetUserGenres
-            RETURN collect(DISTINCT recommendedGenre.name) AS recommendedGenres
-        `, { userName });
-
-        let recommendedGenres = [];
-        if (recommendationResult.records.length > 0) {
-            const recResult = recommendationResult.records[0].get('recommendedGenres');
-            recommendedGenres = recResult ? recResult.filter(genre => genre !== null && genre !== '') : [];
-        }
-
-        res.json({
-            userName,
-            userGenres,
-            recommendedGenres,
-            totalUserGenres: userGenres.length,
-            totalRecommendations: recommendedGenres.length,
-            message: recommendedGenres.length > 0 
-                ? `Se encontraron ${recommendedGenres.length} géneros recomendados`
-                : 'No se encontraron nuevos géneros para recomendar'
-        });
+        res.json({ recommendedGenres: recommendations });
 
     } catch (error) {
         console.error('Error obteniendo recomendación:', error);
@@ -252,6 +241,7 @@ app.get('/api/recommendations/:name', async (req, res) => {
     }
 });
 
+
 // Manejo de errores
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -260,9 +250,9 @@ app.use((err, req, res, next) => {
 
 // Cerrar conexión al salir
 process.on('SIGINT', async () => {
-    console.log('\nCerrando conexiones...');
+    console.log('\n🔄 Cerrando conexiones...');
     if (driver) await driver.close();
-    console.log('Conexiones cerradas');
+    console.log('✅ Conexiones cerradas');
     process.exit(0);
 });
 
@@ -277,6 +267,3 @@ app.listen(port, () => {
     console.log('  DELETE /api/users/:name - Eliminar usuario');
     console.log('  GET  /api/recommendations/:name - Obtener recomendaciones');
 });
-
-
-module.exports = app;
