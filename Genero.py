@@ -1,19 +1,19 @@
 class Genero:
     """
-    Un género musical.
-    
-    Tiene un nombre y su forma original.
+    clase que identifica el género musical de una canción.
+    Permite crear géneros, normalizarlos, validarlos y compararlos.
+    También permite crear géneros desde una lista y obtener géneros válidos.
     """
     
     GENEROS_VALIDOS = {
-        'rock', 'pop', 'Electronica', 'jazz', 'clasica', 'rap', 'k-pop', 'Blues', 'indie', 'hip hop', 'bossa nova', 'trap', 'reggaeton'
+        'rock', 'pop', 'electronica', 'jazz', 'clasica', 'rap', 'k-pop', 'blues', 'indie', 'hip hop', 'bossa nova', 'trap', 'reggaeton'
     }
     
     def __init__(self, nombre):
         """
         Crea un género nuevo.
         
-        nombre: el nombre del género (string).
+        nombre: el nombre del género (de variable string).
         """
         if not nombre or not isinstance(nombre, str):
             raise ValueError("El nombre del género no puede estar vacío y debe ser un string")
@@ -23,11 +23,11 @@ class Genero:
     
     def _normalizar_nombre(self, nombre):
         """
-        Normaliza el nombre (privado).
+        Normaliza el nombre del genero (privado).
         
         nombre: nombre original.
         
-        Devuelve el nombre en minúsculas y sin espacios extra.
+        haciendo que devuelva el nombre en minúsculas y sin espacios extra.
         """
         return nombre.strip().lower()
     
@@ -44,9 +44,7 @@ class Genero:
     
     def es_genero_valido(self):
         """
-        Dice si el género es válido.
-        
-        Devuelve True o False.
+        Dice si el género es válido, en dado caso este no lo sea devuelve False.
         """
         return self.nombre in self.GENEROS_VALIDOS
     
@@ -64,11 +62,9 @@ class Genero:
     
     def es_similar_a(self, otro_genero):
         """
-        Dice si este género es igual a otro.
+        Dice si este género es igual a otro, dependiendo de este devolverá un true o un false.
         
         otro_genero: otro Genero o string.
-        
-        Devuelve True o False.
         """
         if isinstance(otro_genero, Genero):
             return self.nombre == otro_genero.nombre
@@ -133,9 +129,9 @@ class Genero:
         """
         Permite ordenar géneros alfabéticamente.
         
-        other: otro Genero.
+        other: se refiere a otro Genero del cuál se está hablando.
         
-        Devuelve True si este va antes.
+        En dado caso de que este nombre vaya antes alfabéticamente que el otro, devuelve True.
         """
         if isinstance(other, Genero):
             return self.nombre < other.nombre
