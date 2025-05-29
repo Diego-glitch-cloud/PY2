@@ -14,7 +14,7 @@ class SistemaRecomendacion:
 
     def agregar_usuario(self, nombre, generos):
         with self.driver.session() as session:
-            session.write_transaction(self._crear_usuario_y_relaciones, nombre, generos)
+            session.execute_write(self._crear_usuario_y_relaciones, nombre, generos)
 
     @staticmethod
     def _crear_usuario_y_relaciones(tx, nombre, generos):
