@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Sistema de Recomendación Musical</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .status.disconnected {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+        }
+        
+        .status.connected {
+            background: rgba(78, 205, 196, 0.2);
+            border: 2px solid #4ecdc4;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 25px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #4ecdc4;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .user-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .user-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #e1e8ed;
+            transition: all 0.2s ease;
+        }
+        
+        .user-item:hover {
+            background: #e8f4f8;
+        }
+        
+        .user-item.selected {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid #4ecdc4;
+            color: #2d7d7d;
+        }
+        
+        .alert-error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            color: #d63031;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+        
+        .recommendation-result {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(252, 182, 159, 0.3);
+        }
+        
+        .recommendation-result h3 {
+            color: #d63031;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Sistema de Recomendación Musical</h1>
+            <p>Interfaz web para gestión de usuarios y recomendaciones musicales</p>
+            <div id="status" class="status disconnected">🔴 Desconectado</div>
+        </div>
+        
+        <div class="content">
+
+            <!-- Conexión -->
+            <div class="section">
+                <h2>🔌 Conexión a Neo4j</h2>
+                <div class="grid">
+                    <div>
+                        <div class="form-group">
+                            <label for="uri">URI de Neo4j:</label>
+                            <input type="text" id="uri" value="bolt://localhost:7687" placeholder="bolt://localhost:7687">
+                        </div>
+                        <div class="form-group">
+                            <label for="username">Usuario:</label>
+                            <input type="text" id="username" value="neo4j" placeholder="neo4j">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label for="password">Contraseña:</label>
+                            <input type="password" id="password" placeholder="Contraseña de Neo4j">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn" onclick="conectar()">Conectar</button>
+                            <button class="btn btn-danger" onclick="desconectar()" disabled id="disconnectBtn">Desconectar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('add')">➕ Agregar Usuario</div>
+                <div class="tab" onclick="showTab('delete')">🗑️ Eliminar Usuario</div>
+                <div class="tab" onclick="showTab('recommend')">🎯 Recomendaciones</div>
+            </div>
+            
+            <!-- Agregar Usuario -->
+            <div id="addTab" class="tab-content active">
+                <div class="section">
+                    <h2>➕ Agregar Nuevo Usuario</h2>
+                    <div class="form-group">
+                        <label for="userName">Nombre del usuario:</label>
+                        <input type="text" id="userName" placeholder="Ingrese el nombre del usuario">
+                    </div>
+                    <div class="form-group">
+                        <label for="genres">Géneros musicales (separados por comas):</label>
+                        <textarea id="genres" placeholder="Ejemplo: rock, pop, jazz, blues, electronic, reggaeton, salsa, hip hop"></textarea>
+                        <small style="color: #666; margin-top: 5px; display: block;">💡 Ingrese al menos 2 géneros para mejores recomendaciones</small>
+                    </div>
+                    <button class="btn" onclick="agregarUsuario()" disabled id="addUserBtn">Agregar Usuario</button>
+                </div>
+            </div>
+            
+            <!-- Eliminar Usuario -->
+            <div id="deleteTab" class="tab-content">
+                <div class="section">
+                    <h2>🗑️ Eliminar Usuario</h2>
+                    <div class="form-group">
+                        <label>Usuarios registrados:</label>
+                        <div id="userListDelete" class="user-list">
+                            <div style="padding: 20px; text-align: center; color: #666;">
+                                Conecte a Neo4j para ver usuarios
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="actualizarListaUsuarios('delete')" disabled id="refreshDeleteBtn">🔄 Actualizar Lista</button>
+                    <button class="btn btn-danger" onclick="eliminarUsuario()" disabled id="deleteUserBtn">Eliminar Seleccionado</button>
+                </div>
+            </div>
+            
+            <!-- Recomendaciones -->
+            <div id="recommendTab" class="tab-content">
+                <div class="section">
+                    <h2>🎯 Obtener Recomendaciones</h2>
+                    <div class="form-group">
+                        <label>Seleccionar usuario:</label>
+                        <div id="userListRecommend" class="user-list">
+                            <div style="padding: 20px; text-align: center; color: #666;">
+                                Conecte a Neo4j para ver usuarios
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="actualizarListaUsuarios('recommend')" disabled id="refreshRecommendBtn">🔄 Actualizar Lista</button>
+                    <button class="btn" onclick="obtenerRecomendacion()" disabled id="recommendBtn">Obtener Recomendación</button>
+                    
+                    <div id="recommendationResult" style="display: none;">
+                        <h3>Géneros del usuario:</h3>
+                        <div id="userGenres" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;"></div>
+                        <div class="recommendation-result">
+                            <h3>🎵 Recomendación:</h3>
+                            <div id="recommendation"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log -->
+            <div class="section">
+                <h2>📋 Log de Actividades</h2>
+                <div id="log" class="log">Sistema iniciado. Conecte a Neo4j para comenzar.</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let selectedUserForDelete = null;
+        let selectedUserForRecommend = null;
+        let connected = false;
+        
+        // URL del backend API (cambiar según tu configuración)
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        // Funciones de interfaz
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function logMessage(message) {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `\n[${timestamp}] ${message}`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const content = document.querySelector('.content');
+            content.insertBefore(alertDiv, content.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Función para hacer peticiones HTTP
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const config = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (data) {
+                config.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Error en la petición');
+                }
+                
+                return result;
+            } catch (error) {
+                throw new Error(`Error de conexión: ${error.message}`);
+            }
+        }
+        
+        // Funciones de Neo4j
+        async function conectar() {
+            const uri = document.getElementById('uri').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!uri || !username || !password) {
+                showAlert('Todos los campos de conexión son obligatorios', 'error');
+                return;
+            }
+            
+            logMessage('🔄 Intentando conectar a Neo4j...');
+            
+            try {
+                await apiRequest('/connect', 'POST', { uri, username, password });
+                
+                connected = true;
+                document.getElementById('status').textContent = '🟢 Conectado';
+                document.getElementById('status').className = 'status connected';
+                
+                // Habilitar botones
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('addUserBtn').disabled = false;
+                document.getElementById('refreshDeleteBtn').disabled = false;
+                document.getElementById('deleteUserBtn').disabled = false;
+                document.getElementById('refreshRecommendBtn').disabled = false;
+                document.getElementById('recommendBtn').disabled = false;
+                
+                logMessage('✅ Conectado exitosamente a Neo4j');
+                showAlert('Conectado exitosamente a Neo4j');
+                
+                // Cargar usuarios iniciales
+                actualizarListaUsuarios('delete');
+                actualizarListaUsuarios('recommend');
+                
+            } catch (error) {
+                logMessage(`❌ Error de conexión: ${error.message}`);
+                showAlert(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function desconectar() {
+            try {
+                await apiRequest('/disconnect', 'POST');
+            } catch (error) {
+                console.log('Error al desconectar:', error);
+            }
+            
+            connected = false;
+            document.getElementById('status').textContent = '🔴 Desconectado';
+            document.getElementById('status').className = 'status disconnected';
+            
+            // Deshabilitar botones
+            document.getElementById('disconnectBtn').disabled = true;
+            document.getElementById('addUserBtn').disabled = true;
+            document.getElementById('refreshDeleteBtn').disabled = true;
+            document.getElementById('deleteUserBtn').disabled = true;
+            document.getElementById('refreshRecommendBtn').disabled = true;
+            document.getElementById('recommendBtn').disabled = true;
+            
+            // Limpiar listas
+            document.getElementById('userListDelete').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Conecte a Neo4j para ver usuarios</div>';
+            document.getElementById('userListRecommend').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Conecte a Neo4j para ver usuarios</div>';
+            
+            logMessage('🔌 Desconectado de Neo4j');
+            showAlert('Desconectado de Neo4j', 'error');
+        }
+        
+        async function agregarUsuario() {
+            const userName = document.getElementById('userName').value.trim();
+            const genresText = document.getElementById('genres').value.trim();
+            
+            if (!userName) {
+                showAlert('El nombre del usuario no puede estar vacío', 'error');
+                return;
+            }
+            
+            if (!genresText) {
+                showAlert('Debe especificar al menos un género', 'error');
+                return;
+            }
+            
+            const genres = genresText.split(',').map(g => g.trim().toLowerCase()).filter(g => g);
+            
+            if (genres.length === 0) {
+                showAlert('Debe especificar al menos un género válido', 'error');
+                return;
+            }
+            
+            try {
+                await apiRequest('/users', 'POST', { name: userName, genres: genres });
+                
+                logMessage(`✅ Usuario '${userName}' agregado con géneros: ${genres.join(', ')}`);
+                showAlert(`Usuario '${userName}' agregado exitosamente`);
+                
+                // Limpiar campos
+                document.getElementById('userName').value = '';
+                document.getElementById('genres').value = '';
+                
+                // Actualizar listas
+                actualizarListaUsuarios('delete');
+                actualizarListaUsuarios('recommend');
+                
+            } catch (error) {
+                logMessage(`❌ Error al agregar usuario: ${error.message}`);
+                showAlert(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function actualizarListaUsuarios(tipo) {
+            const listElement = document.getElementById(tipo === 'delete' ? 'userListDelete' : 'userListRecommend');
+            
+            try {
+                const result = await apiRequest('/users');
+                const usuarios = result.users || [];
+                
+                if (usuarios.length === 0) {
+                    listElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No hay usuarios registrados</div>';
+                    return;
+                }
+                
+                listElement.innerHTML = '';
+                usuarios.forEach((usuario) => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'user-item';
+                    userDiv.textContent = `${usuario.name} (${usuario.genres.length} géneros)`;
+                    userDiv.onclick = () => {
+                        // Quitar selección anterior
+                        listElement.querySelectorAll('.user-item').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        
+                        // Seleccionar actual
+                        userDiv.classList.add('selected');
+                        
+                        if (tipo === 'delete') {
+                            selectedUserForDelete = usuario.name;
+                        } else {
+                            selectedUserForRecommend = usuario.name;
+                        }
+                    };
+                    listElement.appendChild(userDiv);
+                });
+                
+                logMessage(`📋 Lista de usuarios actualizada: ${usuarios.length} usuarios`);
+                
+            } catch (error) {
+                logMessage(`❌ Error al obtener usuarios: ${error.message}`);
+                showAlert(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function eliminarUsuario() {
+            if (!selectedUserForDelete) {
+                showAlert('Seleccione un usuario para eliminar', 'error');
+                return;
+            }
+            
+            if (!confirm(`¿Está seguro de eliminar al usuario "${selectedUserForDelete}"?`)) {
+                return;
+            }
+            
+            try {
+                await apiRequest(`/users/${encodeURIComponent(selectedUserForDelete)}`, 'DELETE');
+                
+                logMessage(`🗑️ Usuario '${selectedUserForDelete}' eliminado`);
+                showAlert(`Usuario '${selectedUserForDelete}' eliminado exitosamente`);
+                
+                selectedUserForDelete = null;
+                actualizarListaUsuarios('delete');
+                actualizarListaUsuarios('recommend');
+                
+            } catch (error) {
+                logMessage(`❌ Error al eliminar usuario: ${error.message}`);
+                showAlert(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function obtenerRecomendacion() {
+            if (!selectedUserForRecommend) {
+                showAlert('Seleccione un usuario para obtener recomendaciones', 'error');
+                return;
+            }
+            
+            try {
+                const result = await apiRequest(`/recommendations/${encodeURIComponent(selectedUserForRecommend)}`);
+                
+                document.getElementById('userGenres').textContent = result.userGenres.join(', ');
+                document.getElementById('recommendation').textContent = result.recommendation || 'No se encontraron recomendaciones';
+                document.getElementById('recommendationResult').style.display = 'block';
+                
+                logMessage(`🎯 Recomendación para '${selectedUserForRecommend}': ${result.recommendation}`);
+                
+            } catch (error) {
+                logMessage(`❌ Error al obtener recomendación: ${error.message}`);
+                showAlert(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Mostrar instrucciones iniciales
+        setTimeout(() => {
+            logMessage('💡 Para comenzar: 1) Configure la conexión a Neo4j, 2) Haga clic en Conectar');
+            logMessage('⚠️ Nota: Necesita un servidor backend ejecutándose para la conexión real');
+        }, 1000);
+    </script>
+</body>
+</html>
