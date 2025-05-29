@@ -20,10 +20,10 @@ async function connectToNeo4j(uri, username, password) {
         driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
         await driver.verifyConnectivity();
 
-        console.log('✅ Conectado a Neo4j exitosamente');
+        console.log('Conectado a Neo4j exitosamente');
         return true;
     } catch (error) {
-        console.error('❌ Error conectando a Neo4j:', error);
+        console.error('Error conectando a Neo4j:', error);
         throw error;
     }
 }
@@ -252,7 +252,7 @@ app.use((err, req, res, next) => {
 process.on('SIGINT', async () => {
     console.log('\n🔄 Cerrando conexiones...');
     if (driver) await driver.close();
-    console.log('✅ Conexiones cerradas');
+    console.log('Conexiones cerradas');
     process.exit(0);
 });
 
