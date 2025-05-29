@@ -13,7 +13,7 @@ box-sizing: border-box;
 
 body {
 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+background: linear-gradient(135deg, #673f8e 0%, #2c0000 100%);
 min-height: 100vh;
 padding: 20px;
 }
@@ -29,7 +29,7 @@ backdrop-filter: blur(10px);
 }
 
 .header {
-background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+background: linear-gradient(45deg, #070093, #000000);
 color: white;
 padding: 30px;
 text-align: center;
@@ -315,7 +315,7 @@ margin-bottom: 20px;
 <body>
 <div class="container">
 <div class="header">
-<h1>🎵 Sistema de Recomendación Musical</h1>
+<h1>Sistema de Recomendación Musical</h1>
 <p>Interfaz web para gestión de usuarios y recomendaciones musicales</p>
 <div id="status" class="status disconnected">🔴 Desconectado</div>
 </div>
@@ -324,7 +324,7 @@ margin-bottom: 20px;
 
 <!-- Conexión -->
 <div class="section">
-<h2>🔌 Conexión a Neo4j</h2>
+<h2>Conexión a Neo4j</h2>
 <div class="grid">
 <div>
 <div class="form-group">
@@ -351,15 +351,15 @@ margin-bottom: 20px;
 
 <!-- Tabs -->
 <div class="tabs">
-<div class="tab active" onclick="showTab('add')">➕ Agregar Usuario</div>
-<div class="tab" onclick="showTab('delete')">🗑️ Eliminar Usuario</div>
-<div class="tab" onclick="showTab('recommend')">🎯 Recomendaciones</div>
+<div class="tab active" onclick="showTab('add')">Agregar Usuario</div>
+<div class="tab" onclick="showTab('delete')">Eliminar Usuario</div>
+<div class="tab" onclick="showTab('recommend')">Recomendaciones</div>
 </div>
 
 <!-- Agregar Usuario -->
 <div id="addTab" class="tab-content active">
 <div class="section">
-<h2>➕ Agregar Nuevo Usuario</h2>
+<h2>Agregar Nuevo Usuario</h2>
 <div class="form-group">
 <label for="userName">Nombre del usuario:</label>
 <input type="text" id="userName" placeholder="Ingrese el nombre del usuario">
@@ -367,7 +367,7 @@ margin-bottom: 20px;
 <div class="form-group">
 <label for="genres">Géneros musicales (separados por comas):</label>
 <textarea id="genres" placeholder="Ejemplo: rock, pop, jazz, blues, electronic, reggaeton, salsa, hip hop"></textarea>
-<small style="color: #666; margin-top: 5px; display: block;">💡 Ingrese al menos 2 géneros para mejores recomendaciones</small>
+<small style="color: #666; margin-top: 5px; display: block;">Ingrese al menos 2 géneros para mejores recomendaciones</small>
 </div>
 <button class="btn" onclick="agregarUsuario()" disabled id="addUserBtn">Agregar Usuario</button>
 </div>
@@ -376,7 +376,7 @@ margin-bottom: 20px;
 <!-- Eliminar Usuario -->
 <div id="deleteTab" class="tab-content">
 <div class="section">
-<h2>🗑️ Eliminar Usuario</h2>
+<h2>Eliminar Usuario</h2>
 <div class="form-group">
 <label>Usuarios registrados:</label>
 <div id="userListDelete" class="user-list">
@@ -385,7 +385,7 @@ Conecte a Neo4j para ver usuarios
 </div>
 </div>
 </div>
-<button class="btn" onclick="actualizarListaUsuarios('delete')" disabled id="refreshDeleteBtn">🔄 Actualizar Lista</button>
+<button class="btn" onclick="actualizarListaUsuarios('delete')" disabled id="refreshDeleteBtn">Actualizar Lista</button>
 <button class="btn btn-danger" onclick="eliminarUsuario()" disabled id="deleteUserBtn">Eliminar Seleccionado</button>
 </div>
 </div>
@@ -393,7 +393,7 @@ Conecte a Neo4j para ver usuarios
 <!-- Recomendaciones -->
 <div id="recommendTab" class="tab-content">
 <div class="section">
-<h2>🎯 Obtener Recomendaciones</h2>
+<h2>Obtener Recomendaciones</h2>
 <div class="form-group">
 <label>Seleccionar usuario:</label>
 <div id="userListRecommend" class="user-list">
@@ -402,14 +402,14 @@ Conecte a Neo4j para ver usuarios
 </div>
 </div>
 </div>
-<button class="btn" onclick="actualizarListaUsuarios('recommend')" disabled id="refreshRecommendBtn">🔄 Actualizar Lista</button>
+<button class="btn" onclick="actualizarListaUsuarios('recommend')" disabled id="refreshRecommendBtn">Actualizar Lista</button>
 <button class="btn" onclick="obtenerRecomendacion()" disabled id="recommendBtn">Obtener Recomendación</button>
 
 <div id="recommendationResult" style="display: none;">
 <h3>Géneros del usuario:</h3>
 <div id="userGenres" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 10px 0;"></div>
 <div class="recommendation-result">
-<h3>🎯 Recomendación:</h3>
+<h3>Recomendación:</h3>
 <div id="recommendation"></div>
 </div>
 </div>
@@ -418,7 +418,7 @@ Conecte a Neo4j para ver usuarios
 
 <!-- Log -->
 <div class="section">
-<h2>📋 Log de Actividades</h2>
+<h2>    Log de Actividades</h2>
 <div id="log" class="log">Sistema iniciado. Conecte a Neo4j para comenzar.</div>
 </div>
 </div>
@@ -504,7 +504,7 @@ showAlert('Todos los campos de conexión son obligatorios', 'error');
 return;
 }
 
-logMessage('🔄 Intentando conectar a Neo4j...');
+logMessage('Intentando conectar a Neo4j...');
 
 try {
 await apiRequest('/connect', 'POST', { uri, username, password });
@@ -521,7 +521,7 @@ document.getElementById('deleteUserBtn').disabled = false;
 document.getElementById('refreshRecommendBtn').disabled = false;
 document.getElementById('recommendBtn').disabled = false;
 
-logMessage('✅ Conectado exitosamente a Neo4j');
+logMessage('Conectado exitosamente a Neo4j');
 showAlert('Conectado exitosamente a Neo4j');
 
 // Cargar usuarios iniciales
@@ -529,7 +529,7 @@ actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
 } catch (error) {
-logMessage(`❌ Error de conexión: ${error.message}`);
+logMessage(`Error de conexión: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -585,7 +585,7 @@ return;
 try {
 await apiRequest('/users', 'POST', { name: userName, genres: genres });
 
-logMessage(`✅ Usuario '${userName}' agregado con géneros: ${genres.join(', ')}`);
+logMessage(`Usuario '${userName}' agregado con géneros: ${genres.join(', ')}`);
 showAlert(`Usuario '${userName}' agregado exitosamente`);
 
 // Limpiar campos
@@ -597,7 +597,7 @@ actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
 } catch (error) {
-logMessage(`❌ Error al agregar usuario: ${error.message}`);
+logMessage(`Error al agregar usuario: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -643,10 +643,10 @@ selectedUserForRecommend = usuario.name;
 listElement.appendChild(userDiv);
 });
 
-logMessage(`📋 Lista de usuarios actualizada: ${usuarios.length} usuarios`);
+logMessage(`Lista de usuarios actualizada: ${usuarios.length} usuarios`);
 
 } catch (error) {
-logMessage(`❌ Error al obtener usuarios: ${error.message}`);
+logMessage(`Error al obtener usuarios: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -668,7 +668,7 @@ const result = await apiRequest(`/users/${encodeURIComponent(selectedUserForDele
 const deletedUser = result.deletedUser;
 const genresList = deletedUser.genres.join(', ');
 
-logMessage(`🗑️ Usuario '${deletedUser.name}' eliminado - Géneros: [${genresList}]`);
+logMessage(`Usuario '${deletedUser.name}' eliminado - Géneros: [${genresList}]`);
 showAlert(`Usuario '${deletedUser.name}' eliminado exitosamente. Géneros: ${genresList}`);
 
 selectedUserForDelete = null;
@@ -676,7 +676,7 @@ actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
 } catch (error) {
-logMessage(`❌ Error al eliminar usuario: ${error.message}`);
+logMessage(`Error al eliminar usuario: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
@@ -700,18 +700,18 @@ const recommendationText = result.recommendedGenres && result.recommendedGenres.
 document.getElementById('recommendation').textContent = recommendationText;
 document.getElementById('recommendationResult').style.display = 'block';
 
-logMessage(`🎯 Recomendaciones para '${selectedUserForRecommend}': ${recommendationText}`);
+logMessage(`Recomendaciones para '${selectedUserForRecommend}': ${recommendationText}`);
 
 } catch (error) {
-logMessage(`❌ Error al obtener recomendación: ${error.message}`);
+logMessage(`Error al obtener recomendación: ${error.message}`);
 showAlert(`Error: ${error.message}`, 'error');
 }
 }
 
 // Mostrar instrucciones iniciales
 setTimeout(() => {
-logMessage('💡 Para comenzar: 1) Configure la conexión a Neo4j, 2) Haga clic en Conectar');
-logMessage('⚠️ Nota: Necesita un servidor backend ejecutándose para la conexión real');
+logMessage('Para comenzar: 1) Configure la conexión a Neo4j, 2) Haga clic en Conectar');
+logMessage('Nota: Necesita un servidor backend ejecutándose para la conexión real');
 }, 1000);
 </script>
 </body>
