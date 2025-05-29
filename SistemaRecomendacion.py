@@ -1,5 +1,4 @@
-import PySimpleGUI as sg
-from Usuario import Usuario
+import PySimpleGUI as sg # Se mantiene el import si esta clase está en el mismo archivo que la GUI o si la GUI la instancia aquí.
 
 class SistemaRecomendacion:
     """
@@ -13,7 +12,7 @@ class SistemaRecomendacion:
         para los usuarios, géneros y relaciones, y cargando los datos iniciales.
         """
         # Atributos (Datos de la base de datos)
-        self.user_preferences = {}          # { 'nombre_usuario': Usuario }
+        self.user_preferences = {}          # { 'nombre_usuario': {'genero1', 'genero2'} }
         self.genre_relationships = {}       # { ('genero_menor', 'genero_mayor'): peso }
         self.shared_listeners_count = {}    # { ('genero_menor', 'genero_mayor'): conteo_total_oyentes }
 
@@ -29,18 +28,7 @@ class SistemaRecomendacion:
         pass
 
     def add_user(self, username: str, selected_genres: list[str]) -> str:
-        if not username or not isinstance(username, str):
-            return "Nombre de usuario inválido."
-
-        if username in self.user_preferences:
-            return f"El usuario '{username}' ya existe."
-
-        try:
-            nuevo_usuario = Usuario(username, selected_genres)
-            self.user_preferences[username] = nuevo_usuario
-            return f"Usuario '{username}' agregado exitosamente."
-        except Exception as e:
-            return f"Error al agregar usuario: {str(e)}"
+        pass
 
     def get_recommendation(self, username: str) -> str:
         pass
