@@ -1,49 +1,37 @@
 class Usuario:
     """
-    Representa a un usuario del sistema de recomendación de géneros musicales.
+    Un usuario del sistema de recomendación de música.
     
-    Attributes:
-        nombre (str): El nombre del usuario.
-        generos_favoritos (set): Conjunto de géneros que le gustan al usuario.
+    Tiene un nombre y una lista de géneros musicales que le gustan.
     """
     
     def __init__(self, nombre, generos_favoritos=None):
         """
-        Inicializa un objeto Usuario.
+        Crea un usuario nuevo.
         
-        Args:
-            nombre (str): El nombre del usuario. No puede estar vacío.
-            generos_favoritos (list, set, or None): Los géneros favoritos del usuario.
-                                                   Si es None, se inicializa como set vacío.
-        
-        Raises:
-            ValueError: Si el nombre está vacío o es None.
-            TypeError: Si generos_favoritos no es iterable.
+        nombre: el nombre del usuario (no puede estar vacío).
+        generos_favoritos: géneros que le gustan (lista o conjunto). Si no se da, empieza vacío.
         """
         if not nombre or not isinstance(nombre, str):
             raise ValueError("El nombre del usuario no puede estar vacío y debe ser un string")
         
         self.nombre = nombre.strip()
         
-        # Inicializar géneros favoritos
         if generos_favoritos is None:
             self.generos_favoritos = set()
         else:
             try:
-                # Convertir a set y normalizar (minúsculas, sin espacios extra)
                 self.generos_favoritos = {genero.strip().lower() for genero in generos_favoritos if genero and genero.strip()}
             except TypeError:
                 raise TypeError("generos_favoritos debe ser iterable (lista, set, etc.)")
     
     def agregar_genero(self, genero):
         """
-        Agrega un género a los favoritos del usuario.
+        Añade un género a la lista de favoritos.
         
-        Args:
-            genero (str): El género a agregar.
+        genero: el género a añadir (string).
         
-        Returns:
-            bool: True si se agregó, False si ya existía.
+        Devuelve True si se añadió, False si ya estaba.
         """
         if not genero or not isinstance(genero, str):
             raise ValueError("El género debe ser un string no vacío")
@@ -57,13 +45,11 @@ class Usuario:
     
     def quitar_genero(self, genero):
         """
-        Quita un género de los favoritos del usuario.
+        Quita un género de la lista de favoritos.
         
-        Args:
-            genero (str): El género a quitar.
+        genero: el género a quitar (string).
         
-        Returns:
-            bool: True si se quitó, False si no existía.
+        Devuelve True si se quitó, False si no estaba.
         """
         if not genero or not isinstance(genero, str):
             return False
@@ -76,13 +62,11 @@ class Usuario:
     
     def le_gusta_genero(self, genero):
         """
-        Verifica si al usuario le gusta un género específico.
+        Dice si al usuario le gusta un género.
         
-        Args:
-            genero (str): El género a verificar.
+        genero: el género a comprobar (string).
         
-        Returns:
-            bool: True si le gusta el género, False en caso contrario.
+        Devuelve True o False.
         """
         if not genero or not isinstance(genero, str):
             return False
@@ -91,31 +75,23 @@ class Usuario:
     
     def obtener_generos_ordenados(self):
         """
-        Obtiene los géneros favoritos ordenados alfabéticamente.
-        
-        Returns:
-            list: Lista de géneros ordenados.
+        Devuelve los géneros favoritos ordenados alfabéticamente.
         """
         return sorted(list(self.generos_favoritos))
     
     def cantidad_generos(self):
         """
-        Obtiene la cantidad de géneros favoritos.
-        
-        Returns:
-            int: Número de géneros favoritos.
+        Devuelve cuántos géneros favoritos tiene.
         """
         return len(self.generos_favoritos)
     
     def tiene_generos_en_comun(self, otro_usuario):
         """
-        Verifica si este usuario tiene géneros en común con otro usuario.
+        Dice qué géneros tiene en común con otro usuario.
         
-        Args:
-            otro_usuario (Usuario): Otro usuario para comparar.
+        otro_usuario: otro objeto Usuario.
         
-        Returns:
-            set: Conjunto de géneros en común.
+        Devuelve un conjunto con los géneros en común.
         """
         if not isinstance(otro_usuario, Usuario):
             raise TypeError("El parámetro debe ser una instancia de Usuario")
@@ -124,32 +100,24 @@ class Usuario:
     
     def __str__(self):
         """
-        Representación legible del usuario.
-        
-        Returns:
-            str: Descripción del usuario.
+        Muestra el usuario de forma sencilla.
         """
         generos_str = ", ".join(self.obtener_generos_ordenados()) if self.generos_favoritos else "ninguno"
         return f"Usuario: {self.nombre} | Géneros favoritos: {generos_str}"
     
     def __repr__(self):
         """
-        Representación técnica del usuario.
-        
-        Returns:
-            str: Representación para debugging.
+        Muestra el usuario para debugging.
         """
         return f"Usuario(nombre='{self.nombre}', generos_favoritos={self.generos_favoritos})"
     
     def __eq__(self, other):
         """
-        Verifica si dos usuarios son iguales (mismo nombre).
+        Compara dos usuarios por su nombre.
         
-        Args:
-            other (Usuario): Otro usuario para comparar.
+        other: otro objeto Usuario.
         
-        Returns:
-            bool: True si son iguales, False en caso contrario.
+        Devuelve True si son iguales, False si no.
         """
         if not isinstance(other, Usuario):
             return False
@@ -157,9 +125,6 @@ class Usuario:
     
     def __hash__(self):
         """
-        Hace la clase hashable para poder usar en sets y diccionarios.
-        
-        Returns:
-            int: Hash del usuario basado en el nombre.
+        Permite usar Usuario en sets y diccionarios.
         """
         return hash(self.nombre.lower())
