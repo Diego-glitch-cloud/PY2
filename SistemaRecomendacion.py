@@ -1,52 +1,72 @@
-import PySimpleGUI as sg
-from Usuario import Usuario
+from neo4j import GraphDatabase
 
 class SistemaRecomendacion:
     """
-    Encapsula la lógica central del sistema de recomendación y la gestión de la base de datos simulada.
-    Actúa como el "cerebro" del sistema, coordinando las demás operaciones.
+    Sistema de recomendación musical basado en géneros y filtrado colaborativo.
+    Usa una base de datos Neo4j para almacenar usuarios, géneros y relaciones entre ellos.
     """
 
-    def __init__(self):
-        """
-        Inicializa el sistema de recomendación, configurando las estructuras de datos
-        para los usuarios, géneros y relaciones, y cargando los datos iniciales.
-        """
-        # Atributos (Datos de la base de datos)
-        self.user_preferences = {}          # { 'nombre_usuario': Usuario }
-        self.genre_relationships = {}       # { ('genero_menor', 'genero_mayor'): peso }
-        self.shared_listeners_count = {}    # { ('genero_menor', 'genero_mayor'): conteo_total_oyentes }
+    def __init__(self, uri, user, password):
+        self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
-        self.available_genres = [
-            "Rock", "Pop", "Electronica", "Jazz", "Clasica", "Rap", "K-Pop", "Blues",
-            "Indie", "Hip Hop", "Bossa Nova", "Trap", "Reggaeton"
-        ]
+    def close(self):
+        self.driver.close()
 
-        # Cargar datos iniciales al instanciar el sistema
-        self._populate_initial_data()
+    def agregar_usuario(self, nombre, generos):
+        with self.driver.session() as session:
+            session.write_transaction(self._crear_usuario_y_relaciones, nombre, generos)
 
-    def _update_genre_similarity(self, genre1: str, genre2: str) -> bool:
-        pass
+    @staticmethod
+    def _crear_usuario_y_relaciones(tx, nombre, generos):
+        tx.run("MERGE (u:Usuario {nombre: $nombre})", nombre=nombre)
 
-    def add_user(self, username: str, selected_genres: list[str]) -> str:
-        if not username or not isinstance(username, str):
-            return "Nombre de usuario inválido."
+        for genero in generos:
+            genero = genero.strip().lower()
+            tx.run("MERGE (g:Genero {nombre: $genero})", genero=genero)
+            tx.run("""
+                MATCH (u:Usuario {nombre: $nombre}), (g:Genero {nombre: $genero})
+                MERGE (u)-[:LE_GUSTA]->(g)
+            """, nombre=nombre, genero=genero)
 
-        if username in self.user_preferences:
-            return f"El usuario '{username}' ya existe."
+        for i in range(len(generos)):
+            for j in range(i + 1, len(generos)):
+                g1, g2 = sorted([generos[i].strip().lower(), generos[j].strip().lower()])
+                
+                # Crear relación si no existe (peso 0)
+                tx.run("""
+                    MERGE (g1:Genero {nombre: $g1})
+                    MERGE (g2:Genero {nombre: $g2})
+                    MERGE (g1)-[r:RELACIONADO_CON]-(g2)
+                    ON CREATE SET r.peso = 0
+                """, g1=g1, g2=g2)
 
-        try:
-            nuevo_usuario = Usuario(username, selected_genres)
-            self.user_preferences[username] = nuevo_usuario
-            return f"Usuario '{username}' agregado exitosamente."
-        except Exception as e:
-            return f"Error al agregar usuario: {str(e)}"
+                # Calcular cuántos usuarios distintos comparten ambos géneros
+                result = tx.run("""
+                    MATCH (u:Usuario)-[:LE_GUSTA]->(g1:Genero {nombre: $g1})
+                          <-[:LE_GUSTA]-(u)-[:LE_GUSTA]->(g2:Genero {nombre: $g2})
+                    RETURN COUNT(DISTINCT u) AS total
+                """, g1=g1, g2=g2)
 
-    def get_recommendation(self, username: str) -> str:
-        pass
+                total = result.single()["total"]
+                if total >= 2:
+                    tx.run("""
+                        MATCH (g1:Genero {nombre: $g1})-[r:RELACIONADO_CON]-(g2:Genero {nombre: $g2})
+                        SET r.peso = $peso
+                    """, g1=g1, g2=g2, peso=total)
 
-    def get_db_status_content(self) -> str:
-        pass
+    def recomendar_genero(self, nombre_usuario):
+        with self.driver.session() as session:
+            result = session.run("""
+                MATCH (u:Usuario {nombre: $nombre})-[:LE_GUSTA]->(g1)
+                MATCH (g1)-[r:RELACIONADO_CON]-(g2)
+                WHERE NOT (u)-[:LE_GUSTA]->(g2)
+                RETURN g2.nombre AS genero, SUM(r.peso) AS score
+                ORDER BY score DESC
+                LIMIT 1
+            """, nombre=nombre_usuario)
 
-    def _populate_initial_data(self):
-        pass
+            record = result.single()
+            if record:
+                return f"Te recomendamos: {record['genero'].title()} (score: {record['score']})"
+            else:
+                return "No se encontraron recomendaciones."
