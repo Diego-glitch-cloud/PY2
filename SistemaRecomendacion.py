@@ -16,6 +16,19 @@ class SistemaRecomendacion:
         with self.driver.session() as session:
             session.execute_write(self._crear_usuario_y_relaciones, nombre, generos)
 
+    def eliminar_usuario(self, nombre):
+        with self.driver.session() as session:
+            session.execute_write(self._borrar_usuario_y_relaciones, nombre)
+
+    @staticmethod
+    def _borrar_usuario_y_relaciones(tx, nombre):
+        # Borra el usuario y todas las relaciones asociadas
+        tx.run("""
+            MATCH (u:Usuario {nombre: $nombre})
+            DETACH DELETE u
+        """, nombre=nombre)
+
+
     @staticmethod
     def _crear_usuario_y_relaciones(tx, nombre, generos):
         tx.run("MERGE (u:Usuario {nombre: $nombre})", nombre=nombre)
