@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<!--Configuraciones basicas -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎵 Sistema de Recomendación Musical</title>
+<!--Estilo css -->
 <style>
 * {
 margin: 0;
@@ -91,6 +93,7 @@ margin-bottom: 8px;
 font-weight: 600;
 color: #555;
 }
+
 
 input, textarea, select {
 width: 100%;
@@ -322,7 +325,7 @@ margin-bottom: 20px;
 
 <div class="content">
 
-<!-- Conexión -->
+<!-- establecer conexion con el Neo4J -->
 <div class="section">
 <h2>Conexión a Neo4j</h2>
 <div class="grid">
@@ -349,14 +352,14 @@ margin-bottom: 20px;
 </div>
 </div>
 
-<!-- Tabs -->
+<!-- tabs a utilizar -->
 <div class="tabs">
 <div class="tab active" onclick="showTab('add')">Agregar Usuario</div>
 <div class="tab" onclick="showTab('delete')">Eliminar Usuario</div>
 <div class="tab" onclick="showTab('recommend')">Recomendaciones</div>
 </div>
 
-<!-- Agregar Usuario -->
+<!-- para agregar un nuevo usuario -->
 <div id="addTab" class="tab-content active">
 <div class="section">
 <h2>Agregar Nuevo Usuario</h2>
@@ -373,7 +376,7 @@ margin-bottom: 20px;
 </div>
 </div>
 
-<!-- Eliminar Usuario -->
+<!-- para eliminar un usuario dentro de la base de datos -->
 <div id="deleteTab" class="tab-content">
 <div class="section">
 <h2>Eliminar Usuario</h2>
@@ -390,7 +393,7 @@ Conecte a Neo4j para ver usuarios
 </div>
 </div>
 
-<!-- Recomendaciones -->
+<!-- brindar una recomenadcon -->
 <div id="recommendTab" class="tab-content">
 <div class="section">
 <h2>Obtener Recomendaciones</h2>
@@ -420,15 +423,15 @@ Conecte a Neo4j para ver usuarios
 </div>
 
 <script>
-// Variables globales
+// variables 
 let selectedUserForDelete = null;
 let selectedUserForRecommend = null;
 let connected = false;
 
-// URL del backend API
+// Backend en estilo URL
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// Funciones de interfaz
+// funciones para la interzaf grafica
 function showTab(tabName) {
 document.querySelectorAll('.tab-content').forEach(tab => {
 tab.classList.remove('active');
@@ -461,7 +464,7 @@ alertDiv.remove();
 }, 5000);
 }
 
-// Función para hacer peticiones HTTP
+// funcion para las solicitudes
 async function apiRequest(endpoint, method = 'GET', data = null) {
 const config = {
 method: method,
@@ -488,7 +491,7 @@ throw new Error(`Error de conexión: ${error.message}`);
 }
 }
 
-// Funciones de Neo4j
+// acciones de Neo4j
 async function conectar() {
 const uri = document.getElementById('uri').value;
 const username = document.getElementById('username').value;
@@ -507,7 +510,7 @@ connected = true;
 document.getElementById('status').textContent = '🟢 Conectado';
 document.getElementById('status').className = 'status connected';
 
-// Habilitar botones
+// habilitar el acceso y funcionamiento de botones
 document.getElementById('disconnectBtn').disabled = false;
 document.getElementById('addUserBtn').disabled = false;
 document.getElementById('refreshDeleteBtn').disabled = false;
@@ -517,7 +520,7 @@ document.getElementById('recommendBtn').disabled = false;
 
 showAlert('Conectado exitosamente a Neo4j');
 
-// Cargar usuarios iniciales
+// usuarios iniciales 
 actualizarListaUsuarios('delete');
 actualizarListaUsuarios('recommend');
 
@@ -608,7 +611,7 @@ usuarios.forEach((usuario) => {
 const userDiv = document.createElement('div');
 userDiv.className = 'user-item';
 
-// Mostrar la lista completa de géneros
+// mostrar los generos
 userDiv.innerHTML = `
 <div class="user-name">${usuario.name}</div>
 <div class="user-genres">Géneros: ${usuario.genres.join(', ')}</div>
@@ -666,6 +669,7 @@ showAlert(`Error: ${error.message}`, 'error');
 }
 }
 
+// funcion para obtener la recomendacion
 async function obtenerRecomendacion() {
     if (!selectedUserForRecommend) {
         showAlert('Seleccione un usuario para obtener recomendaciones', 'error');
@@ -693,8 +697,7 @@ async function obtenerRecomendacion() {
     }
 }
 
-
-// Mostrar instrucciones iniciales
+// instrucciones basicas e iniciales 
 setTimeout(() => {
 }, 1000);
 </script>
